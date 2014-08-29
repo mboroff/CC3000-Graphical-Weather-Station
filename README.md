@@ -1,4 +1,4 @@
 CC3000-Graphical-Weather-Station
 ================================
 
-Graphical weather console
+Arduino AtMega2560 Graphical weather console
