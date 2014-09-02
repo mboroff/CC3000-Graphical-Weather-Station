@@ -205,6 +205,11 @@ boolean lookingForobservationtime = false;
 boolean lookingForfahrenheit = false;
 boolean lookingFortitle = false;
 boolean lookingForfcttext = false;
+boolean lookingForweather = false;
+boolean lookingFortemp_f = false;
+boolean lookingForrelative_humidity = false;
+boolean lookingForwind_dir = false;
+boolean lookingForwind_mph = false;
 boolean firsTtime = true;
 
 /***************************************************
@@ -216,23 +221,18 @@ String buff;
             Weather
 ******************************************************/
 
-
+int wl;
+int wdl;
+int wmph;
 int l;
 static char weather[36];
-//static char temperaturestring[25];
-//static char humidity[20];
-//static char windstring[100];
-//static char pressurein[10];
-//static char dewpointstring[25];
-//static char feelslikestring[25];
-//static char preciptodaystring[20];
-//static char feelslikef[10];
-//static char visibilitymi[10];
-//static char title[9][20];
-//static char fcttext[5][200];
-//static char fahrenheit[8][10];
 String observationtime;
-int highestBuffct = 0;
+//int highestBuffct = 0;
+static char wind_mph[10];
+static char temp_f[7]; 
+static char relative_humidity[4];
+static char wind_dir[10];
+
 //static char tempf[10];
 static char weatherChars[19][36] = { "Light Drizzle", "Light Rain", "Heavy Rain", "Rain", 
                                      "Light Snow", "Heavy Snow", "Snow",  "Hail", 
@@ -398,7 +398,6 @@ void loop(void)
   */
   Adafruit_CC3000_Client www = cc3000.connectTCP(ip, 80);
 
-
               if (www.connected()) {
                   www.fastrprint(F("GET "));
                   www.fastrprint(WEBPAGE2);
@@ -423,7 +422,7 @@ void loop(void)
               Serial.println();
               Serial.println(F("-------------------------------------"));
 
-
+              char compareChar = '"';
   /* Read data until either the connection is closed, or the idle timeout is reached. */ 
               unsigned long lastRead = millis();
               while (www.connected() && (millis() - lastRead < IDLE_TIMEOUT_MS)) {
@@ -431,7 +430,7 @@ void loop(void)
                  char c = www.read();
                  Serial.print(c);
               lastRead = millis();
-              if (c == '"') {
+              if (c == compareChar) {
                   if (startQuote == false) {
                       startQuote = true;
                       buff = "";
@@ -439,298 +438,98 @@ void loop(void)
                   else  {   // not quote
                          if (startQuote == true) {
                              startQuote = false;
-                             if (buff == String("weather")){
-                                 buff = "";  
-                                 if (www.available()&& (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-                                     c = www.read();       // read colon
-                                     }
-                                 Serial.print(c);
-                                 lastRead = millis();
-                                 if (www.available()&& (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-                                     c = www.read();       // read quote
-                                     }
-                                 Serial.print(c);
-                                 lastRead = millis();
-                                 if (www.available()&& (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-                                     c = www.read();       // read first char
-                                     }
-                                 Serial.print(c);
-                                 lastRead = millis();
-                                 buff +=c;                  // concat first char to buff
-                                 x = 240;
-                                 y = 230;
-                                 tft.graphicsMode();
-                                 tft.fillRect(x, y, 330, 25, CYAN);
-                                 while (c != '"') {             // stop on quote or comma
-                                        tft.drawChar(x, y, c, BLACK, CYAN, 3);  // print last read char
-                                        x = x + 19;                             // move cursor to right
-                                        if (www.available()&& (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-                                            c = www.read();       // read next char
-                                            }
-                                        Serial.print(c);              
-                                        lastRead = millis();
-                                        buff += c;
-                                         } 
-                                 l = buff.length();      
-                                 buff.toCharArray(weather, l);                                 
-                                 buff = "";
-                                 }
-                             else
-                             if (buff == String("temp_f")){
- //                                Serial.println(); Serial.println(buff);
-                                 buff = "";  
-                                 if (www.available()&& (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-                                     c = www.read();       // read colon
-                                     }
-                                 Serial.print(c);    // read colon
-                                 lastRead = millis();
-                                 if (www.available()&& (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-                                     c = www.read();       // read first char
-                                     }
-                                 Serial.print(c);
-                                 lastRead = millis();
-                                 int x = 30;
-                                 int y = 140;
-                                 l = 0;
-                                 tft.graphicsMode();
-                                 while (c != '.' && c != ',') {
-                                       tft.drawChar(x, y, c, BLACK, BLUE, 10);  
-                                       x = x + 60;
-                                       buff += c;
-                                       l = buff.length(); 
-                                       if (www.available()&& (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-                                           c = www.read();       // read next char
-                                           }
-                                         Serial.print(c);    // read next char
-                                         lastRead = millis();
-                                        }   
-                                 }                  
-                             else
-                             if (buff == String("wind_mph")){
-   //                   Serial.println();   Serial.println(buff);
-                                 buff = "";
-                                 if (www.available()&& (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-                                     c = www.read();       // read colon
-                                     }
-                                 Serial.print(c);          // READ COLON
-                                 lastRead = millis();
-                                 if (www.available()&& (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-                                     c = www.read();      
-                                     }
-                                 Serial.print(c);          // READ first char
-                                 lastRead = millis();
-                                 int x = 240;
-                                 int y = 360;
-                                 tft.graphicsMode();
-                                 while (c != ',') {
-                                        if (c != ':') {
-                                            tft.drawChar(x, y, c, BLACK, GREEN, 5);  
-                                            x = x + 30;
-                                            }                         
-                                        if (www.available()&& (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-                                            c = www.read();       // read colon
-                                            }
-                                        Serial.print(c);
-                                        lastRead = millis();
-                                        } 
-                                 tft.textMode();
-                                 tft.textEnlarge(1);  
-                                 tft.textColor(BLACK, GREEN);
-                                 tft.textSetCursor(x, y + 5);
-                                 tft.print("Mph");
-                                 buff = "";
-                                 }                     
-                             else
                              if (lookingForobservationtime == true) {
                                  lookingForobservationtime = false; 
                                  l = buff.length();
                                  observationtime = "";
                                  observationtime = buff.substring(0, l-6);
-                                 tft.textMode();
-                                 tft.textEnlarge(1);  
-                                 tft.textColor(BLACK, WHITE);
-                                 tft.textSetCursor(35, 10);
-                                 tft.print(observationtime);
-                                 tft.graphicsMode();
-                                 tft.fillRect(300, 10, 140, 35, WHITE);
-                                 int searchIndex;
-                                 int foundIndex;
-                                 char observeshortdays[DAYSINWEEK][4] =
-                                       {"Sat", "Sun", "Mon", "Tue", "Wed",
-                                        "Thu", "Fri", "Sat" };
-                                 String foundValue = "";
-                                 searchIndex = 0;
-                                 foundIndex = observationtime.indexOf(',');
-                                 foundValue = observationtime.substring(0, foundIndex);
-                                 for (int i = 0; i < 7; i++) {
-                                      if (foundValue == observeshortdays[i]) {
-                                          mYweekDay = i;
-                                          }
-                                      }
-                                 searchIndex = foundIndex + 2;
-                                 foundIndex = observationtime.indexOf(" ", searchIndex);
-                                 foundValue = observationtime.substring(searchIndex, foundIndex);
-                                 char tempday[foundValue.length() + 1];
-                                 foundValue.toCharArray(tempday, sizeof(tempday));
-                                 mYmonthDay = atoi(tempday);
-                                 searchIndex = foundIndex + 1;
-                                 foundIndex = observationtime.indexOf(" ", searchIndex);
-                                 foundValue = observationtime.substring(searchIndex, foundIndex);
-                                 if (foundValue == String("Jan")) mYmonth = 1;
-                                 if (foundValue == String("Feb")) mYmonth = 2;
-                                 if (foundValue == String("Mar")) mYmonth = 3;
-                                 if (foundValue == String("April")) mYmonth = 4;
-                                 if (foundValue == String("May")) mYmonth = 5;
-                                 if (foundValue == String("June")) mYmonth = 6;
-                                 if (foundValue == String("Jul")) mYmonth = 7;
-                                 if (foundValue == String("Aug")) mYmonth = 8;
-                                 if (foundValue == String("Sept")) mYmonth = 9;
-                                 if (foundValue == String("Oct")) mYmonth = 10;
-                                 if (foundValue == String("Nov")) mYmonth = 11;
-                                 if (foundValue == String("Dec")) mYmonth = 12;
-                                 searchIndex = foundIndex + 1;
-                                 foundValue = observationtime.substring(searchIndex, searchIndex + 4);
-                                 char tempyear[foundValue.length() + 1];
-                                 foundValue.toCharArray(tempyear, sizeof(tempyear));
-                                 mYyear = atoi(tempyear);
-                                 searchIndex = searchIndex + 5;
-                                 foundValue = observationtime.substring(searchIndex, searchIndex + 2);
-                                 char temphour[foundValue.length() + 1];  
-                                 foundValue.toCharArray(temphour, sizeof(temphour));
-                                 mYhour = atoi(temphour);
-                                 searchIndex = searchIndex + 3;
-                                 foundValue = observationtime.substring(searchIndex, searchIndex + 2);
-                                 char tempminute[foundValue.length() + 1];  
-                                 foundValue.toCharArray(tempminute, sizeof(tempminute));
-                                 mYminute = atoi(tempminute);
-                                 searchIndex = searchIndex + 3;
-                                 foundValue = observationtime.substring(searchIndex, searchIndex + 2);
-                                 char tempsecond[foundValue.length() + 1];  
-                                 foundValue.toCharArray(tempsecond, sizeof(tempsecond));
-                                 mYsecond = atoi(tempsecond);
-                                 setTime(mYhour, mYminute, mYsecond, mYmonthDay, mYmonth, mYyear);
+//                                 Serial.println(); Serial.println(observationtime); Serial.println(buff);
                                  buff = "";                         
                                  }
                              else                         
                              if (buff == String("local_time_rfc822")){
                                  lookingForobservationtime = true;
- //                        Serial.print(buff);    Serial.print(F(" "));
                                  buff = "";      
                                  }
                              else
-                             if (buff == String("relative_humidity")){
-                                 buff = "";  
-                                 if (www.available()&& (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-                                     c = www.read();       // read first char
-                                     }
-                                 Serial.print(c);       // READ COLON
-                                 lastRead = millis();
-                                 if (www.available()&& (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-                                     c = www.read();       
-                                     }
-                                 Serial.print(c);       // READ QUOTE
-                                 lastRead = millis();
-                                 x = 30;
-                                 y = 320;
-                                 tft.graphicsMode();
-                                 if (www.available()&& (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-                                     c = www.read();       // read first char
-                                     }
-                                 Serial.print(c);
-                                 lastRead = millis();
-                                 tft.drawChar(x, y, c, BLACK, BLUE, 10); 
-                                 x = x + 60;
-                                  if (www.available()&& (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-                                     c = www.read();    // read next char
-                                   }
-                                 Serial.print(c);
-                                 lastRead = millis();
-                                 tft.drawChar(x, y, c, BLACK, BLUE, 10); 
-                                  if (www.available()&& (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-                                     c = www.read();               // READ %
-                                   }
-                                 Serial.print(c);    
-                                 lastRead = millis();
-                                  if (www.available()&& (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-                                     c = www.read();               // READ quote
-                                   }
-                                 Serial.print(c);    
-                                 lastRead = millis();
+                             if (lookingForweather == true) {
+                                 lookingForweather = false; 
+                                 l = buff.length();
+                                 wl = l;
+                                 buff.toCharArray(weather, l+1);
+//                                 Serial.println(); Serial.println(weather); Serial.println(buff);
+                                 buff = "";
+                                 }
+                             else                         
+                             if (buff == String("weather")){
+                                 lookingForweather = true;
+                                 buff = "";
                                  }
                              else
+                             if (lookingFortemp_f == true) {
+                                 lookingFortemp_f = false; 
+                                 l = buff.length();
+                                 buff.toCharArray(temp_f, l+1);
+//                                 Serial.println(); Serial.println(temp_f); Serial.println(buff);
+                                 buff = "";
+                                 startQuote = true;
+                                 }
+                             else
+                             if (buff == String("temp_f")){
+                                  buff = "";  
+                                 lookingFortemp_f = true;                         
+                                 startQuote = true;
+                                 }                  
+                             else
+                             if (lookingForrelative_humidity == true) {
+                                 lookingForrelative_humidity = false; 
+                                 l = buff.length();
+                                 buff.toCharArray(relative_humidity, l);
+//                                 Serial.println(); Serial.println(relative_humidity); Serial.println(buff);
+                                 buff = "";
+                                 }
+                             else                         
+                             if (buff == String("relative_humidity")){
+                                 buff = "";  
+                                 lookingForrelative_humidity = true;  
+                                 }                               
+                             else
+                             if (lookingForwind_dir == true) {
+                                 lookingForwind_dir = false; 
+                                 l = buff.length();
+                                 buff.toCharArray(wind_dir, l+1);
+                                 wdl = l+1;
+//                                Serial.println(); Serial.println(wind_dir); Serial.println(buff);
+                                 buff = "";
+                                 }
+                             else                         
                              if (buff == String("wind_dir")){
-  //   Serial.println(); Serial.println(buff); 
-                               buff = "";  
-                                 if (www.available()&& (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-                                     c = www.read();       // read colon
-                                     }
-                                     else {
-                                           Serial.println(F("Time-out"));  
-                                           Serial.flush();
-                                           www.close();
-                                           cc3000.stop();
-                                           void(* resetFunc) (void) = 0; //declare reset function @ address 0
-                                           resetFunc();  //call reset
-                                           return;
-                                           }
-                                 Serial.print(c);       // read quote
-                                 lastRead = millis();
-                                 if (www.available()&& (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-                                     c = www.read();
-                                     }
-                                     else {
-                                           Serial.println(F("Time-out"));  
-                                           Serial.flush();
-                                           www.close();
-                                           cc3000.stop();
-                                           void(* resetFunc) (void) = 0; //declare reset function @ address 0
-                                           resetFunc();  //call reset
-                                           return;
-                                           }
-                                 Serial.print(c);
-                                 lastRead = millis();
-                                 x = 240;
-                                 y = 300;
-                                 tft.graphicsMode();
-                                 if (www.available()&& (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-                                     c = www.read();       // read first char
-                                     }
-                                     else {
-                                           Serial.println(F("Time-out"));  
-                                           Serial.flush();
-                                           www.close();
-                                           cc3000.stop();
-                                           void(* resetFunc) (void) = 0; //declare reset function @ address 0
-                                           resetFunc();  //call reset
-                                           return;
-                                           }
-                                 Serial.print(c);
-                                 lastRead = millis();
-                                 while (c != '"') {
-                                        tft.drawChar(x, y, c, BLACK, GREEN, 5);  
-                                        x = x + 30;
-                                 if (www.available()&& (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-                                     c = www.read();       // read next char
-                                     }
-                                     else {
-                                           Serial.println(F("Time-out"));  
-                                           Serial.flush();
-                                           www.close();
-                                           cc3000.stop();
-                                           void(* resetFunc) (void) = 0; //declare reset function @ address 0
-                                           resetFunc();  //call reset
-                                           return;
-                                           }
-                                        Serial.print(c);
-                                        lastRead = millis();
-                                        } 
-                                 } // end of else not quote
-                         } // end of start quote 
-                      } // end of start quote quote
-                  } else
+                                 buff = "";  
+                                 lookingForwind_dir = true;  
+                                 }                               
+                             else
+                             if (lookingForwind_mph == true) {
+                                 lookingForwind_mph = false; 
+                                 l = buff.length();
+                                 wmph = l+1;
+                                 buff.toCharArray(wind_mph, l+1);
+//                                 Serial.println(); Serial.println(wind_mph); Serial.println(buff);
+                                 buff = "";
+                                 startQuote = false;
+                                 }
+                             else                             
+                             if (buff == String("wind_mph")){
+                                 buff = "";
+                                 lookingForwind_mph = true;
+                                 startQuote = true;
+                             }
+                         }  // end of  startQuote == true              
+                  } // end of else not quote
+              } // end c ==
+               else
               if (startQuote == true) buff += c;
-              }   
-          }
+              }  // end of while available   
+          } // end of while connected
 
           Serial.println();
 
@@ -740,7 +539,6 @@ void loop(void)
                int result = strcmp(weather, weatherChars[i]);
                if (result == 0) {
                    tft.graphicsMode();
-  //         tft.fillRect(330, 100, 140, 140, CYAN);
                    switch (weatherBmps[i]){
                    case 1:
                           bmpDraw("cldy128.bmp", 330, 90);
@@ -778,6 +576,107 @@ void loop(void)
                    }  // end of switch               
                  }
                }
+           x = 240;
+           y = 230;
+           tft.fillRect(x, y, 330, 25, CYAN);
+           for (int i = 0; i < wl; i++){
+                tft.drawChar(x, y, weather[i], BLACK, CYAN, 3);  // print  char                 
+                x = x + 19;                             // move cursor to right
+                }
+          int x = 30;
+          int y = 140;
+          for (int i = 0; i < 2 ; i++){
+               tft.drawChar(x, y,temp_f[i+1], BLACK, BLUE, 10);  
+               x = x + 60;
+               } 
+          x = 30;
+          y = 320;
+          for (int i = 0; i < 2 ; i++){
+               tft.drawChar(x, y,relative_humidity[i], BLACK, BLUE, 10);  
+               x = x + 60;
+               } 
+          x = 240;
+          y = 300;
+          for (int i = 0; i < wdl ; i++){
+               tft.drawChar(x, y,wind_dir[i], BLACK, GREEN, 5);  
+               x = x + 30;
+               } 
+          x = 240;
+          y = 360;
+          for (int i = 0; i < wmph; i++){
+               if (wind_mph[i+1] == ',') break;
+               tft.drawChar(x, y, wind_mph[i+1], BLACK, GREEN, 5);  
+               x = x + 30;
+               }
+          tft.textMode();
+          tft.textEnlarge(1);  
+          tft.textColor(BLACK, GREEN);
+          tft.textSetCursor(x, y + 5);
+          tft.print("Mph");
+          tft.textMode();
+          tft.textEnlarge(1);  
+          tft.textColor(BLACK, WHITE);
+          tft.textSetCursor(35, 10);
+          tft.print(observationtime);
+          tft.graphicsMode();
+          tft.fillRect(300, 10, 140, 35, WHITE);
+          int searchIndex;
+          int foundIndex;
+          char observeshortdays[DAYSINWEEK][4] =
+                              {"Sat", "Sun", "Mon", "Tue", "Wed",
+                               "Thu", "Fri", "Sat" };
+          String foundValue = "";
+          searchIndex = 0;
+          foundIndex = observationtime.indexOf(',');
+          foundValue = observationtime.substring(0, foundIndex);
+          for (int i = 0; i < 7; i++) {
+               if (foundValue == observeshortdays[i]) {
+                   mYweekDay = i;
+                   }
+               }
+          searchIndex = foundIndex + 2;
+          foundIndex = observationtime.indexOf(" ", searchIndex);
+          foundValue = observationtime.substring(searchIndex, foundIndex);
+          char tempday[foundValue.length() + 1];
+          foundValue.toCharArray(tempday, sizeof(tempday));
+          mYmonthDay = atoi(tempday);
+          searchIndex = foundIndex + 1;
+          foundIndex = observationtime.indexOf(" ", searchIndex);
+          foundValue = observationtime.substring(searchIndex, foundIndex);
+          if (foundValue == String("Jan")) mYmonth = 1;
+          if (foundValue == String("Feb")) mYmonth = 2;
+          if (foundValue == String("Mar")) mYmonth = 3;
+          if (foundValue == String("Apr")) mYmonth = 4;
+          if (foundValue == String("May")) mYmonth = 5;
+          if (foundValue == String("Jun")) mYmonth = 6;
+          if (foundValue == String("Jul")) mYmonth = 7;
+          if (foundValue == String("Aug")) mYmonth = 8;
+          if (foundValue == String("Sep")) mYmonth = 9;
+          if (foundValue == String("Oct")) mYmonth = 10;
+          if (foundValue == String("Nov")) mYmonth = 11;
+          if (foundValue == String("Dec")) mYmonth = 12;
+          searchIndex = foundIndex + 1;
+          foundValue = observationtime.substring(searchIndex, searchIndex + 4);
+          char tempyear[foundValue.length() + 1];
+          foundValue.toCharArray(tempyear, sizeof(tempyear));
+          mYyear = atoi(tempyear);
+          searchIndex = searchIndex + 5;
+          foundValue = observationtime.substring(searchIndex, searchIndex + 2);
+          char temphour[foundValue.length() + 1];  
+          foundValue.toCharArray(temphour, sizeof(temphour));
+          mYhour = atoi(temphour);
+          searchIndex = searchIndex + 3;
+          foundValue = observationtime.substring(searchIndex, searchIndex + 2);
+          char tempminute[foundValue.length() + 1];  
+          foundValue.toCharArray(tempminute, sizeof(tempminute));
+          mYminute = atoi(tempminute);
+          searchIndex = searchIndex + 3;
+          foundValue = observationtime.substring(searchIndex, searchIndex + 2);
+          char tempsecond[foundValue.length() + 1];  
+          foundValue.toCharArray(tempsecond, sizeof(tempsecond));
+          mYsecond = atoi(tempsecond);
+          setTime(mYhour, mYminute, mYsecond, mYmonthDay, mYmonth, mYyear);
+                 
  // Serial.println(F("-------------------------------------"));
   
   /* You need to make sure to clean up after yourself or the CC3000 can freak out */
