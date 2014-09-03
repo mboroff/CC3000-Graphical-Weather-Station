@@ -7,202 +7,37 @@ void foreCast() {
  tft.fillRect(0, 0, 800, 60, WHITE);
  tft.textMode();
  tft.textEnlarge(1);  
- tft.textColor(RED, WHITE);
+ tft.textColor(BLACK, WHITE);
+ tft.textSetCursor(35, 10);
+ tft.print(observationtime);
  tft.textSetCursor(300, 10);
- tft.print("Getting INFO");
+ tft.print("FORECAST");
  tft.textColor(WHITE, BLUE);
- internetCtr++;  
- buff = "";
-  /* Try connecting to the website.
-     Note: HTTP/1.1 protocol is used to keep the server from closing the connection before all data is read.
-  */
-  Adafruit_CC3000_Client www = cc3000.connectTCP(ip, 80);
+ tft.textSetCursor(0, 90);
+ tft.print(title1); tft.print(" "); tft.print(fahrenheit0); tft.print("/"); tft.print(fahrenheit1); tft.print(" "); tft.print(conditions1);
+ tft.textSetCursor(0, 125);
+ tft.textEnlarge(0);  
+ tft.print(fcttext1);
+ tft.textEnlarge(1);   
+ tft.textSetCursor(0, 180);
+ tft.print(title3); tft.print(" "); tft.print(fahrenheit2); tft.print("/"); tft.print(fahrenheit3); tft.print(" "); tft.print(conditions2);
+ tft.textSetCursor(0, 215);
+ tft.textEnlarge(0);  
+ tft.print(fcttext2);
+ tft.textEnlarge(1);   
+ tft.textSetCursor(0, 270);
+ tft.print(title5); tft.print(" "); tft.print(fahrenheit4); tft.print("/"); tft.print(fahrenheit5); tft.print(" "); tft.print(conditions3);
+ tft.textSetCursor(0, 305);
+ tft.textEnlarge(0);  
+ tft.print(fcttext3);
+ tft.textEnlarge(1);   
+ tft.textSetCursor(0, 360);
+ tft.print(title7); tft.print(" "); tft.print(fahrenheit6); tft.print("/"); tft.print(fahrenheit7); tft.print(" "); tft.print(conditions4);
+ tft.textSetCursor(0, 395);
+ tft.textEnlarge(0);  
+ tft.print(fcttext4);
 
-              if (www.connected()) {
-                  www.fastrprint(F("GET "));
-                  www.fastrprint(WEBPAGE3);
-                  www.fastrprint(F(" HTTP/1.1\r\n"));
-                  www.fastrprint(F("Host: ")); www.fastrprint(WEBSITE); www.fastrprint(F("\r\n"));
-                  www.fastrprint(F("\r\n"));
-                  www.println();
-                  } else {
-                          Serial.println(F("Connection failed"));  
-                          Serial.flush();
-                          www.close();
-//                          cc3000.disconnect();    
-                          cc3000.stop();
-                          void(* resetFunc) (void) = 0; //declare reset function @ address 0
-                          resetFunc();  //call reset
-// worked                          Serial.println("RESET!");
-// worked                         Serial.flush();
-                          digitalWrite(7, LOW); //Pulling the RESET pin LOW triggers the reset.
-
-                          return;
-                          }
-              Serial.println();
-              Serial.println(F("-------------------------------------"));
-
-              char compareChar = '"';
-  /* Read data until either the connection is closed, or the idle timeout is reached. */ 
-              unsigned long lastRead = millis();
-              while (www.connected() && (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-              while (www.available()) {
-                 char c = www.read();
-                 Serial.print(c);
-              lastRead = millis();
-              if (c == compareChar) {
-                  if (startQuote == false) {
-                      startQuote = true;
-                      buff = "";
-                      }
-                  else  {   // not quote
-                         if (startQuote == true) {
-                             startQuote = false;
-//Serial.println(buff);
-                  if (lookingFortitle == true) {
-                      lookingFortitle = false; 
-                      tft.textMode();
-                      tft.textEnlarge(1);  
-//Serial.println(); Serial.println(buff);
-                      if (titleCtr == 1) {
-                          tft.textSetCursor(0, 90);
-                          tft.print(buff);
-                          }
-                      if (titleCtr == 3) {
-                          tft.textSetCursor(0, 180);
-                          tft.print(buff);
-                          }
-                      if (titleCtr == 5) {
-                          tft.textSetCursor(0, 270);
-                          tft.print(buff);
-                          }
-                      if (titleCtr == 7) {
-                          tft.textSetCursor(0, 360);
-                          tft.print(buff);
-                          }
-                      buff = "";
-                      }
-                      else
-                      if (buff == String("title")){
-                          lookingFortitle = true;
-                          titleCtr++;
-                          buff = "";
-                          }
-
-                     if (lookingForfahrenheit == true) {
-                         lookingForfahrenheit = false; 
-                         tft.textMode();
-                         tft.textEnlarge(1);  
-                         if (fahrenheitCtr == 1) {
-                             tft.textSetCursor(200, 90);
-                             tft.textColor(RED, BLUE);
-                             tft.print(buff);
-                             tft.textColor(WHITE, BLUE);
-                             tft.print("/");                             
-                           }                           
-                         if (fahrenheitCtr == 2) {
-                             tft.textSetCursor(250, 90);
-                             tft.print(buff);         
-                           }
-                          
-                         if (fahrenheitCtr == 3) {
-                             tft.textSetCursor(200, 180);
-                             tft.textColor(RED, BLUE);
-                             tft.print(buff);
-                             tft.textColor(WHITE, BLUE);
-                             tft.print("/");
-                           }
-                         if (fahrenheitCtr == 4) {
-                             tft.textSetCursor(250, 180);
-                             tft.print(buff);
-                           }
-                         if (fahrenheitCtr == 5) {
-                             tft.textSetCursor(200, 270);
-                             tft.textColor(RED, BLUE);
-                             tft.print(buff);
-                             tft.textColor(WHITE, BLUE);
-                              tft.print("/");
-                           }
-                         if (fahrenheitCtr == 6) {
-                             tft.textSetCursor(250, 270);
-                             tft.print(buff);
-                           }
-                         if (fahrenheitCtr == 7) {
-                             tft.textSetCursor(200, 360);
-                             tft.textColor(RED, BLUE);
-                             tft.print(buff);
-                             tft.textColor(WHITE, BLUE);
-                             tft.print("/");
-                           }
-                         if (fahrenheitCtr == 8) {
-                             tft.textSetCursor(250, 360);
-                             tft.print(buff);
-                           }
-                         buff = "";                         
-                         }
-                     else
-                     if (buff == String("fahrenheit")){
-                         lookingForfahrenheit = true;
-                         fahrenheitCtr++;
-                         buff = "";
-                         }
-                    else 
-                        if (lookingForfcttext == true) {
-                         lookingForfcttext = false; 
-                         tft.textMode();
-                         tft.textEnlarge(0);  
-                         if (fcttextCtr == 0) {
-                             tft.textSetCursor(0, 120);
-                             tft.print(buff);
-                         }
-                         if (fcttextCtr == 2) {
-                             tft.textSetCursor(0, 210);
-                             tft.print(buff);
-                         }
-                         if (fcttextCtr == 4) {
-                             tft.textSetCursor(0, 300);
-                             tft.print(buff);
-                         }
-                         if (fcttextCtr == 6) {
-                             tft.textSetCursor(0, 390);
-                             tft.print(buff);
-                         }
-                         fcttextCtr++;
-                         buff = "";
-                         }
-                     else
-                     if (buff == String("fcttext")){
-                         lookingForfcttext = true;
-                         buff = "";
-                         }
-                   }  // end of start quote = true
-        } // end of else not = quote
-      } 
-               else
-              if (startQuote == true) buff += c;
-              }  // end of while available   
-          } // end of while connected
-
-          Serial.println();
-          www.close();
-  buff = "";
-  delay(1000);
- // Serial.println(F("-------------------------------------"));
-  
-  /* You need to make sure to clean up after yourself or the CC3000 can freak out */
-  /* the next time your try to connect ... */
- // Serial.println(F("\n\nDisconnecting"));
-//  tft.setCursor(texTx, texTy);
-//  tft.print("Disconnecting");
-//  texTy = texTy + 10;
- // cc3000.disconnect();
- // cc3000.stop();
-   tft.textEnlarge(1);  
-  tft.textColor(BLACK, WHITE);
-  tft.textSetCursor(300, 10);
-  tft.print("FORECAST    ");
-
-int free = 0;
+ int free = 0;
     while (free == 0) {
           if (prevSec != second()) {          // of it is a different second than the previous do the clock thing
           prevSec = second();

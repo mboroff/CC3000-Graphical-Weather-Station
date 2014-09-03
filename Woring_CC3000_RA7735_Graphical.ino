@@ -101,8 +101,8 @@ Adafruit_CC3000 cc3000 = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ
 
 // What page to grab!
 #define WEBSITE      "api.wunderground.com"
-//#define WEBPAGE2      "/api/f6d42935c5858b54/conditions/forecast/q/IL/Skokie.json"
-#define WEBPAGE2      "/api/f6d42935c5858b54/conditions/q/IL/Skokie.json"
+#define WEBPAGE2      "/api/f6d42935c5858b54/conditions/forecast/q/IL/Skokie.json"
+//#define WEBPAGE2      "/api/f6d42935c5858b54/conditions/q/IL/Skokie.json"
 #define WEBPAGE3      "/api/f6d42935c5858b54/forecast/q/IL/Skokie.json"
 
 /**************************************************************************/
@@ -149,7 +149,7 @@ int bmpCtr = 0;
 int searchIndex;
 int foundIndex;
 int indoorCtr = 62;
-int titleCtr = 0, fahrenheitCtr = 0, fcttextCtr = 0;
+int titleCtr = 0, fahrenheitCtr = 0, fcttextCtr = 0, conditionsCtr = 0;
 
 
 /********************************************************
@@ -210,6 +210,7 @@ boolean lookingFortemp_f = false;
 boolean lookingForrelative_humidity = false;
 boolean lookingForwind_dir = false;
 boolean lookingForwind_mph = false;
+boolean lookingForconditions = false;
 boolean firsTtime = true;
 
 /***************************************************
@@ -232,8 +233,33 @@ static char wind_mph[10];
 static char temp_f[7]; 
 static char relative_humidity[4];
 static char wind_dir[10];
+char title1[20];
+char title2[20];
+char title3[20];
+char title4[20];
+char title5[20];
+char title6[20];
+char title7[20];
+char title8[20];
+char fahrenheit0[4];
+char fahrenheit1[4];
+char fahrenheit2[4];
+char fahrenheit3[4];
+char fahrenheit4[4];
+char fahrenheit5[4];
+char fahrenheit6[4];
+char fahrenheit7[4];
+char fcttext1[200];
+char fcttext2[200];
+char fcttext3[200];
+char fcttext4[200];
+char conditions0[40];
+char conditions1[40];
+char conditions2[40];
+char conditions3[40];
+char conditions4[40];
+char conditions5[40];
 
-//static char tempf[10];
 static char weatherChars[19][36] = { "Light Drizzle", "Light Rain", "Heavy Rain", "Rain", 
                                      "Light Snow", "Heavy Snow", "Snow",  "Hail", 
                                      "Light Fog", "Heavy Fog", "Fog",  "Haze",
@@ -396,7 +422,10 @@ void loop(void)
      Note: HTTP/1.1 protocol is used to keep the server from closing the connection before all data is read.
   */
   Adafruit_CC3000_Client www = cc3000.connectTCP(ip, 80);
-
+titleCtr = 0;
+fahrenheitCtr = 0;
+fcttextCtr = 0;
+conditionsCtr = 0;
               if (www.connected()) {
                   www.fastrprint(F("GET "));
                   www.fastrprint(WEBPAGE2);
@@ -442,7 +471,7 @@ void loop(void)
                                  l = buff.length();
                                  observationtime = "";
                                  observationtime = buff.substring(0, l-6);
-                                 Serial.println(); Serial.println(observationtime); Serial.println(buff);
+//                                 Serial.println(); Serial.println(observationtime); Serial.println(buff);
                                  buff = "";                         
                                  }
                              else                         
@@ -514,14 +543,153 @@ void loop(void)
                                  buff.toCharArray(wind_mph, l+1);
 //                                 Serial.println(); Serial.println(wind_mph); Serial.println(buff);
                                  buff = "";
-                                 startQuote = false;
+                                 startQuote = true;
                                  }
                              else                             
                              if (buff == String("wind_mph")){
                                  buff = "";
                                  lookingForwind_mph = true;
                                  startQuote = true;
-                             }
+                                 }
+                             else
+                             if (lookingFortitle == true) {
+                                 lookingFortitle = false; 
+                                 l = buff.length();
+                                 if (titleCtr == 1 ) {
+                                     buff.toCharArray(title1, l+1);
+                                     }
+                                 if (titleCtr == 2 ) {
+                                     buff.toCharArray(title2, l+1);
+                                     }
+                                 if (titleCtr == 3 ) {
+                                     buff.toCharArray(title3, l+1);
+                                     }
+                                 if (titleCtr == 4 ) {
+                                     buff.toCharArray(title4, l+1);
+                                     }
+                                 if (titleCtr == 5 ) {
+                                     buff.toCharArray(title5, l+1);
+                                     }
+                                 if (titleCtr == 6 ) {
+                                     buff.toCharArray(title6, l+1);
+                                     }
+                                 if (titleCtr == 7 ) {
+                                     buff.toCharArray(title7, l+1);
+                                     }
+                                 if (titleCtr == 8 ) {
+                                     buff.toCharArray(title8, l+1);
+                                     }
+
+    //Serial.println(); Serial.print("titleCtr: "); Serial.print(titleCtr); Serial.print(" title: "); Serial.print(title[titleCtr]); Serial.print(" buff: "); Serial.println(buff);
+                                 titleCtr++;
+                                 buff = "";
+                                 }
+                              else
+                              if (buff == String("title")){
+                                  lookingFortitle = true;
+                                  buff = "";
+                                  }
+
+                              if (lookingForfahrenheit == true) {
+                                  lookingForfahrenheit = false; 
+                                  l = buff.length();
+                                  if (fahrenheitCtr == 0) {
+                                      buff.toCharArray(fahrenheit0, l+1);
+                                      }
+                                  if (fahrenheitCtr == 1) {
+                                      buff.toCharArray(fahrenheit1, l+1);
+                                      }
+                                  if (fahrenheitCtr == 2) {
+                                      buff.toCharArray(fahrenheit2, l+1);
+                                      }
+                                  if (fahrenheitCtr == 3) {
+                                      buff.toCharArray(fahrenheit3, l+1);
+                                      }
+                                  if (fahrenheitCtr == 4) {
+                                      buff.toCharArray(fahrenheit4, l+1);
+                                      }
+                                  if (fahrenheitCtr == 5) {
+                                      buff.toCharArray(fahrenheit5, l+1);
+                                      }
+                                  if (fahrenheitCtr == 6) {
+                                      buff.toCharArray(fahrenheit6, l+1);
+                                      }
+                                  if (fahrenheitCtr == 7) {
+                                      buff.toCharArray(fahrenheit7, l+1);
+                                      }
+
+                                  fahrenheitCtr++;
+                                  buff = "";
+                                  }
+                              else
+                             if (buff == String("fahrenheit")){
+                                 lookingForfahrenheit = true;
+                                 buff = "";
+                                 }
+                             else 
+                             if (lookingForfcttext == true) {
+                                 lookingForfcttext = false; 
+                                 l = buff.length();
+// Serial.println();  Serial.print("fcttextCtr: "); Serial.print(fcttextCtr); Serial.print(" L: "); Serial.print(l); Serial.print(" buff: "); Serial.print(buff);  
+                                 if (fcttextCtr ==0) {
+                                     buff.toCharArray(fcttext1, l);
+// Serial.println();                   Serial.print(" fcttext1: ");Serial.println(fcttext1);
+                                     }
+                                 if (fcttextCtr ==3) {
+                                     buff.toCharArray(fcttext2, l);
+// Serial.println();                   Serial.print(" fcttext2: ");Serial.println(fcttext2);                                     
+                                     }
+                                 if (fcttextCtr ==5) {
+                                     buff.toCharArray(fcttext3, l);
+// Serial.println();                   Serial.print(" fcttext3: ");Serial.println(fcttext3);                                     
+                                     }
+                                 if (fcttextCtr ==7) {
+                                     buff.toCharArray(fcttext4, l);
+ //Serial.println();                   Serial.print(" fcttext4: ");Serial.println(fcttext4);                                     
+                                     }
+                                 fcttextCtr++;
+                                 buff = "";
+                                 }
+                             else
+                             if (buff == String("fcttext")){
+                                 lookingForfcttext = true;
+                                 buff = "";
+                                 }
+                             else 
+                             if (lookingForconditions == true) {
+                                 lookingForconditions = false; 
+                                 l = buff.length();
+// Serial.println();  Serial.print("fcttextCtr: "); Serial.print(fcttextCtr); Serial.print(" L: "); Serial.print(l); Serial.print(" buff: "); Serial.print(buff);  
+                                 if (conditionsCtr ==0) {
+                                     buff.toCharArray(conditions0, l+1);
+// Serial.println();                   Serial.print(" conditions0: ");Serial.println(conditions0);
+                                     }
+                                 if (conditionsCtr ==1) {
+                                     buff.toCharArray(conditions1, l+1);
+// Serial.println();                   Serial.print(" conditions1: ");Serial.println(conditions1);                                     
+                                     }
+                                 if (conditionsCtr ==2) {
+                                     buff.toCharArray(conditions2, l+1);
+// Serial.println();                   Serial.print(" conditions2: ");Serial.println(conditions2);                                     
+                                     }
+                                 if (conditionsCtr ==3) {
+                                     buff.toCharArray(conditions3, l+1);
+ //Serial.println();                   Serial.print(" conditions3: ");Serial.println(conditions3);                                     
+                                     }
+                                 if (conditionsCtr ==4) {
+                                     buff.toCharArray(conditions4, l+1);
+ //Serial.println();                   Serial.print(" conditions4: ");Serial.println(conditions4);                                     
+                                     }
+
+                                 conditionsCtr++;
+                                 buff = "";
+                                 }
+                             else
+                             if (buff == String("conditions")){
+                                 lookingForconditions = true;
+                                 buff = "";
+                                 }
+
                          }  // end of  startQuote == true              
                   } // end of else not quote
               } // end c ==
@@ -707,6 +875,15 @@ void loop(void)
   Serial.print("weather: "); Serial.println(weather);  
   Serial.print("Access ctr: "); Serial.println(internetCtr);
   Serial.print("Free RAM: "); Serial.println(getFreeRam(), DEC); 
+  Serial.print(title1); Serial.print(" "); Serial.print(fahrenheit0); Serial.print("/"); Serial.print(fahrenheit1); Serial.print(" "); Serial.println(conditions1);
+  Serial.println(fcttext1);
+  Serial.print(title3); Serial.print(" "); Serial.print(fahrenheit2); Serial.print("/"); Serial.print(fahrenheit3); Serial.print(" "); Serial.println(conditions2);
+  Serial.println(fcttext2);
+  Serial.print(title5); Serial.print(" "); Serial.print(fahrenheit4); Serial.print("/"); Serial.print(fahrenheit5); Serial.print(" "); Serial.println(conditions3);
+  Serial.println(fcttext3);
+  Serial.print(title7); Serial.print(" "); Serial.print(fahrenheit6); Serial.print("/"); Serial.print(fahrenheit7); Serial.print(" "); Serial.println(conditions4);
+  Serial.println(fcttext4);
+  
              }
         }
       tft.textMode();
