@@ -12,52 +12,86 @@ void foreCast() {
  tft.print("Getting INFO");
  tft.textColor(WHITE, BLUE);
  internetCtr++;  
+ buff = "";
   /* Try connecting to the website.
      Note: HTTP/1.1 protocol is used to keep the server from closing the connection before all data is read.
   */
   Adafruit_CC3000_Client www = cc3000.connectTCP(ip, 80);
-  if (www.connected()) {
-    www.fastrprint(F("GET "));
-    www.fastrprint(WEBPAGE3);
-    www.fastrprint(F(" HTTP/1.1\r\n"));
-    www.fastrprint(F("Host: ")); www.fastrprint(WEBSITE); www.fastrprint(F("\r\n"));
-    www.fastrprint(F("\r\n"));
-    www.println();
-  } else {
-    Serial.println(F("Connection failed"));    
+
+              if (www.connected()) {
+                  www.fastrprint(F("GET "));
+                  www.fastrprint(WEBPAGE3);
+                  www.fastrprint(F(" HTTP/1.1\r\n"));
+                  www.fastrprint(F("Host: ")); www.fastrprint(WEBSITE); www.fastrprint(F("\r\n"));
+                  www.fastrprint(F("\r\n"));
+                  www.println();
+                  } else {
+                          Serial.println(F("Connection failed"));  
                           Serial.flush();
                           www.close();
 //                          cc3000.disconnect();    
                           cc3000.stop();
-//                          startConnection();
                           void(* resetFunc) (void) = 0; //declare reset function @ address 0
                           resetFunc();  //call reset
-                          Serial.println("RESET!");
+// worked                          Serial.println("RESET!");
+// worked                         Serial.flush();
                           digitalWrite(7, LOW); //Pulling the RESET pin LOW triggers the reset.
 
                           return;
                           }
-  Serial.println();
+              Serial.println();
+              Serial.println(F("-------------------------------------"));
 
-  Serial.println(F("-------------------------------------"));
+              char compareChar = '"';
   /* Read data until either the connection is closed, or the idle timeout is reached. */ 
-  unsigned long lastRead = millis();
- while (www.connected() && (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-    while (www.available()) {
-      char c = www.read();
-      lastRead = millis();
-      Serial.print(c);
-      if (c == '"') {
-          if (startQuote == false) {
-              startQuote = true;
-              buff = "";
-          }
-        else  {
-                   if (startQuote == true) {
-                       startQuote = false;
+              unsigned long lastRead = millis();
+              while (www.connected() && (millis() - lastRead < IDLE_TIMEOUT_MS)) {
+              while (www.available()) {
+                 char c = www.read();
+                 Serial.print(c);
+              lastRead = millis();
+              if (c == compareChar) {
+                  if (startQuote == false) {
+                      startQuote = true;
+                      buff = "";
+                      }
+                  else  {   // not quote
+                         if (startQuote == true) {
+                             startQuote = false;
+//Serial.println(buff);
+                  if (lookingFortitle == true) {
+                      lookingFortitle = false; 
+                      tft.textMode();
+                      tft.textEnlarge(1);  
+//Serial.println(); Serial.println(buff);
+                      if (titleCtr == 1) {
+                          tft.textSetCursor(0, 90);
+                          tft.print(buff);
+                          }
+                      if (titleCtr == 3) {
+                          tft.textSetCursor(0, 180);
+                          tft.print(buff);
+                          }
+                      if (titleCtr == 5) {
+                          tft.textSetCursor(0, 270);
+                          tft.print(buff);
+                          }
+                      if (titleCtr == 7) {
+                          tft.textSetCursor(0, 360);
+                          tft.print(buff);
+                          }
+                      buff = "";
+                      }
+                      else
+                      if (buff == String("title")){
+                          lookingFortitle = true;
+                          titleCtr++;
+                          buff = "";
+                          }
 
                      if (lookingForfahrenheit == true) {
                          lookingForfahrenheit = false; 
+                         tft.textMode();
                          tft.textEnlarge(1);  
                          if (fahrenheitCtr == 1) {
                              tft.textSetCursor(200, 90);
@@ -104,22 +138,18 @@ void foreCast() {
                              tft.textSetCursor(250, 360);
                              tft.print(buff);
                            }
-                           
-  
-//                         Serial.println(buff);
-//                         Serial.print("buff length = "); Serial.println(l);
                          buff = "";                         
                          }
                      else
                      if (buff == String("fahrenheit")){
                          lookingForfahrenheit = true;
-                          fahrenheitCtr++;
-//                         Serial.print(buff);    Serial.print(F(" "));
+                         fahrenheitCtr++;
                          buff = "";
                          }
                     else 
                         if (lookingForfcttext == true) {
                          lookingForfcttext = false; 
+                         tft.textMode();
                          tft.textEnlarge(0);  
                          if (fcttextCtr == 0) {
                              tft.textSetCursor(0, 120);
@@ -137,57 +167,24 @@ void foreCast() {
                              tft.textSetCursor(0, 390);
                              tft.print(buff);
                          }
-                         
-//                         Serial.println(fcttext[fcttextCtr]);
-//                         Serial.print("buff length = "); Serial.println(l);
                          fcttextCtr++;
                          buff = "";
                          }
                      else
                      if (buff == String("fcttext")){
                          lookingForfcttext = true;
- //                        Serial.print(buff);    Serial.print(F(" "));
                          buff = "";
                          }
-                    else 
+                   }  // end of start quote = true
+        } // end of else not = quote
+      } 
+               else
+              if (startQuote == true) buff += c;
+              }  // end of while available   
+          } // end of while connected
 
-                               if (lookingFortitle == true) {
-                                   lookingFortitle = false; 
-                                   tft.textEnlarge(1);  
-                                   if (titleCtr == 1) {
-                                       tft.textSetCursor(0, 90);
-                                       tft.print(buff);
-                                       }
-                                   if (titleCtr == 3) {
-                                       tft.textSetCursor(0, 180);
-                                       tft.print(buff);
-                                       }
-                                   if (titleCtr == 5) {
-                                       tft.textSetCursor(0, 270);
-                                       tft.print(buff);
-                                       }
-                                   if (titleCtr == 7) {
-                                       tft.textSetCursor(0, 360);
-                                       tft.print(buff);
-                                       }
-                                   buff = "";
-                                   }
-                               else
-                               if (buff == String("title")){
-                                   lookingFortitle = true;
-                                   titleCtr++;
-//          Serial.print(buff);    Serial.print(F(" "));
-                                   buff = "";
-                                   }
-                   }
-        }
-      } else
-       if (startQuote == true) buff += c;
-  }   
- }
-  Serial.println();
-
-  www.close();
+          Serial.println();
+          www.close();
   buff = "";
   delay(1000);
  // Serial.println(F("-------------------------------------"));

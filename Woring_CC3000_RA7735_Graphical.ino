@@ -367,7 +367,6 @@ void setup(void)
   cc3000.printIPdotsRev(ip);
 //  mprintIPdotsRev(ip);
 
-
 }
 
 void loop(void)
@@ -443,7 +442,7 @@ void loop(void)
                                  l = buff.length();
                                  observationtime = "";
                                  observationtime = buff.substring(0, l-6);
-//                                 Serial.println(); Serial.println(observationtime); Serial.println(buff);
+                                 Serial.println(); Serial.println(observationtime); Serial.println(buff);
                                  buff = "";                         
                                  }
                              else                         
@@ -629,20 +628,26 @@ void loop(void)
           searchIndex = 0;
           foundIndex = observationtime.indexOf(',');
           foundValue = observationtime.substring(0, foundIndex);
+//          Serial.print(foundValue);
+          mYweekDay = 9;
           for (int i = 0; i < 7; i++) {
                if (foundValue == observeshortdays[i]) {
                    mYweekDay = i;
                    }
                }
+//          Serial.print(" WD = "); Serial.println(mYweekDay);     
           searchIndex = foundIndex + 2;
           foundIndex = observationtime.indexOf(" ", searchIndex);
           foundValue = observationtime.substring(searchIndex, foundIndex);
           char tempday[foundValue.length() + 1];
           foundValue.toCharArray(tempday, sizeof(tempday));
+  //        Serial.print(foundValue); 
           mYmonthDay = atoi(tempday);
+  //        Serial.print(" MD + "); Serial.println(mYmonthDay);
           searchIndex = foundIndex + 1;
           foundIndex = observationtime.indexOf(" ", searchIndex);
           foundValue = observationtime.substring(searchIndex, foundIndex);
+  //        Serial.println(foundValue);
           if (foundValue == String("Jan")) mYmonth = 1;
           if (foundValue == String("Feb")) mYmonth = 2;
           if (foundValue == String("Mar")) mYmonth = 3;
@@ -659,22 +664,30 @@ void loop(void)
           foundValue = observationtime.substring(searchIndex, searchIndex + 4);
           char tempyear[foundValue.length() + 1];
           foundValue.toCharArray(tempyear, sizeof(tempyear));
+  //        Serial.print(foundValue);
           mYyear = atoi(tempyear);
+  //        Serial.print(" MY = "); Serial.println(mYyear);
           searchIndex = searchIndex + 5;
           foundValue = observationtime.substring(searchIndex, searchIndex + 2);
+  //        Serial.print(foundValue);
           char temphour[foundValue.length() + 1];  
           foundValue.toCharArray(temphour, sizeof(temphour));
           mYhour = atoi(temphour);
+  //        Serial.print( "hr = "); Serial.println(mYhour);
           searchIndex = searchIndex + 3;
           foundValue = observationtime.substring(searchIndex, searchIndex + 2);
+  //        Serial.print(foundValue);
           char tempminute[foundValue.length() + 1];  
           foundValue.toCharArray(tempminute, sizeof(tempminute));
           mYminute = atoi(tempminute);
+  //        Serial.print(" Min = "); Serial.println(mYminute);
           searchIndex = searchIndex + 3;
           foundValue = observationtime.substring(searchIndex, searchIndex + 2);
           char tempsecond[foundValue.length() + 1];  
           foundValue.toCharArray(tempsecond, sizeof(tempsecond));
+  //        Serial.print(foundValue);
           mYsecond = atoi(tempsecond);
+  //        Serial.println(" Sec = "); Serial.println(mYsecond);
           setTime(mYhour, mYminute, mYsecond, mYmonthDay, mYmonth, mYyear);
                  
  // Serial.println(F("-------------------------------------"));
