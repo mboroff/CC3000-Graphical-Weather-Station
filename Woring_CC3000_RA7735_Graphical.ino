@@ -1175,6 +1175,9 @@ bool displayConnectionDetails(void)
   if(!cc3000.getIPAddress(&ipAddress, &netmask, &gateway, &dhcpserv, &dnsserv))
   {
     Serial.println(F("Unable to retrieve the IP Address!\r\n"));
+    void(* resetFunc) (void) = 0; //declare reset function @ address 0
+    resetFunc();  //call reset
+
     return false;
   }
   else
