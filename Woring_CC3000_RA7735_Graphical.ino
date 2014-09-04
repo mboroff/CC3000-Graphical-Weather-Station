@@ -762,6 +762,7 @@ conditionsCtr = 0;
                tft.drawChar(x, y,relative_humidity[i], BLACK, BLUE, 10);  
                x = x + 60;
                } 
+          tft.fillRect(230, 280, 340, 130, GREEN);               
           x = 240;
           y = 300;
           for (int i = 0; i < wdl ; i++){
@@ -855,6 +856,10 @@ conditionsCtr = 0;
           foundValue.toCharArray(tempsecond, sizeof(tempsecond));
   //        Serial.print(foundValue);
           mYsecond = atoi(tempsecond);
+          mYsecond = mYsecond + 15;
+          if (mYsecond > 59) {
+             mYsecond = 60 - mYsecond;
+             }
   //        Serial.println(" Sec = "); Serial.println(mYsecond);
           setTime(mYhour, mYminute, mYsecond, mYmonthDay, mYmonth, mYyear);
                  
@@ -886,6 +891,7 @@ conditionsCtr = 0;
   
              }
         }
+
       tft.textMode();
       tft.textEnlarge(1);
       tft.textColor(BLACK, WHITE);
@@ -1176,7 +1182,7 @@ bool displayConnectionDetails(void)
   {
     Serial.println(F("Unable to retrieve the IP Address!\r\n"));
     void(* resetFunc) (void) = 0; //declare reset function @ address 0
-    resetFunc();  //call reset
+     resetFunc();  //call reset
 
     return false;
   }
