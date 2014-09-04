@@ -43,7 +43,7 @@ void drawMainscreen() {
   tft.print(F("Temperature")); 
   tft.textSetCursor(170, 130);
   tft.print(F("F")); 
-  tft.textSetCursor(145, 310);
+  tft.textSetCursor(150, 310);
   tft.print(F("%"));
   tft.textSetCursor(35, 420);
   tft.print(F("Humidity"));
