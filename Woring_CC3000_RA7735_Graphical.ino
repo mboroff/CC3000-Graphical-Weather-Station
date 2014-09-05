@@ -855,11 +855,7 @@ conditionsCtr = 0;
           foundValue.toCharArray(tempsecond, sizeof(tempsecond));
   //        Serial.print(foundValue);
           mYsecond = atoi(tempsecond);
-          mYsecond = mYsecond + 15;
-          if (mYsecond > 59) {
-             mYsecond = 60 - mYsecond;
-             }
-  //        Serial.println(" Sec = "); Serial.println(mYsecond);
+   //        Serial.println(" Sec = "); Serial.println(mYsecond);
           setTime(mYhour, mYminute, mYsecond, mYmonthDay, mYmonth, mYyear);
                  
  // Serial.println(F("-------------------------------------"));
