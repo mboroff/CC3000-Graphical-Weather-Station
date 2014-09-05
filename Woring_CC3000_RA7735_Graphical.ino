@@ -416,8 +416,7 @@ void loop(void)
           firsTtime == true) {
           if (second() < 3 || firsTtime == true){           // top of the hour
               firsTtime = false;
-              tft.fillRect(230, 280, 340, 130, GREEN);
-              internetCtr++;  
+               internetCtr++;  
   /* Try connecting to the website.
      Note: HTTP/1.1 protocol is used to keep the server from closing the connection before all data is read.
   */
