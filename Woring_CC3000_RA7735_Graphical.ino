@@ -37,6 +37,7 @@ It might not work on all networks!
 #include "Adafruit_RA8875.h"
 #include <Adafruit_STMPE610.h>
 #include "utility/debug.h"
+#include "utility/sntp.h"
 #include <Time.h>
 #include <SD.h>
 #include <string.h>
@@ -269,7 +270,70 @@ static char weatherChars[19][36] = { "Light Drizzle", "Light Rain", "Heavy Rain"
 
 static int weatherBmps[19] = { 3, 3, 3, 3, 5, 8, 8,  11, 2, 2, 2, 6, 10, 10, 6, 9, 1, 1, 1};
 
+/***************************************************************************
+                          NTP
+*****************************************************************************/
 
+//Arguments to SNTP client constructor:
+//	1 - Primary Network Time Server URL (can be NULL)
+//	2 - Secondary Network Time Server URL (also can be NULL)
+//	3 - Local UTC offset in minutes (US Eastern Time is UTC - 5:00
+//	4 - Local UTC offset in minutes for Daylight Savings Time (US Eastern DST is UTC - 4:00
+//	5 - Enable Daylight Savings Time adjustment (not implemented yet)
+//
+sntp mysntp = sntp(NULL, "time.nist.gov", (short)(-6 * 60), (short)(-5 * 60), true);
+
+// Type SNTP_Timestamp is 64-bit NTP time. High-order 32-bits is seconds since 1/1/1900
+//   Low order 32-bits is fractional seconds
+SNTP_Timestamp_t nnow;
+
+// Type NetTime_t contains NTP time broken out to human-oriented values:
+//	uint16_t millis; ///< Milliseconds after the second (0..999)
+//	uint8_t	 sec;    ///< Seconds after the minute (0..59)
+//	uint8_t	 min;    ///< Minutes after the hour (0..59)
+//	uint8_t	 hour;   ///< Hours since midnight (0..23)
+//	uint8_t	 mday;   ///< Day of the month (1..31)
+//	uint8_t	 mon;    ///< Months since January (0..11)
+//	uint16_t year;   ///< Year.
+//	uint8_t	 wday;	 ///< Days since Sunday (0..6)
+//	uint8_t	 yday;   ///< Days since January 1 (0..365)
+//	bool	 isdst;  ///< Daylight savings time flag, currently not supported	
+NetTime_t timeExtract;
+
+#define pF(string_pointer) (reinterpret_cast<const __FlashStringHelper *>(pgm_read_word(string_pointer)))
+
+const prog_char   janStr[] PROGMEM = "January";
+const prog_char   febStr[] PROGMEM = "February";
+const prog_char   marStr[] PROGMEM = "March";
+const prog_char   aprStr[] PROGMEM = "April";
+const prog_char   mayStr[] PROGMEM = "May";
+const prog_char   junStr[] PROGMEM = "June";
+const prog_char   julStr[] PROGMEM = "July";
+const prog_char   augStr[] PROGMEM = "August";
+const prog_char   sepStr[] PROGMEM = "September";
+const prog_char   octStr[] PROGMEM = "October";
+const prog_char   novStr[] PROGMEM = "November";
+const prog_char   decStr[] PROGMEM = "December"; 
+
+PROGMEM const char* const monthStrs[] = { janStr, febStr, marStr, aprStr, mayStr, junStr,
+                                          julStr, augStr, sepStr, octStr, novStr, decStr}; 
+
+const prog_char   sunStr[] PROGMEM = "Sunday";
+const prog_char   monStr[] PROGMEM = "Monday";
+const prog_char   tueStr[] PROGMEM = "Tuesday";
+const prog_char   wedStr[] PROGMEM = "Wednesday";
+const prog_char   thuStr[] PROGMEM = "Thursday";
+const prog_char   friStr[] PROGMEM = "Friday";
+const prog_char   satStr[] PROGMEM = "Saturday"; 
+
+PROGMEM const char* const dayStrs[] = { sunStr, monStr, tueStr,  wedStr,
+                                        thuStr, friStr, satStr};
+
+
+
+/*******************************************************************************
+                          Setup
+*******************************************************************************/                          
 void setup(void)
 {
   digitalWrite(7, HIGH); //We need to set it HIGH immediately on boot
@@ -392,7 +456,7 @@ void setup(void)
 
   cc3000.printIPdotsRev(ip);
 //  mprintIPdotsRev(ip);
-
+   GetNtp();
 }
 
 void loop(void)
@@ -410,7 +474,10 @@ void loop(void)
          prevSec = 99;
         indoorCtr = 99;
         }   
-
+      if (hour() == 0 && minute() == 0 && second() < 3) {
+          GetNtp();
+          firsTtime = true;
+          }
       if (minute() ==  0 || minute() == 10 || minute() == 20 || 
           minute() == 30 || minute() == 40 || minute() == 50 || 
           firsTtime == true) {
@@ -787,77 +854,78 @@ conditionsCtr = 0;
           tft.print(observationtime);
           tft.graphicsMode();
           tft.fillRect(300, 10, 140, 35, WHITE);
-          int searchIndex;
-          int foundIndex;
-          char observeshortdays[DAYSINWEEK][4] =
-                              {"Sat", "Sun", "Mon", "Tue", "Wed",
-                               "Thu", "Fri", "Sat" };
-          String foundValue = "";
-          searchIndex = 0;
-          foundIndex = observationtime.indexOf(',');
-          foundValue = observationtime.substring(0, foundIndex);
+  
+//          int searchIndex;
+//          int foundIndex;
+//          char observeshortdays[DAYSINWEEK][4] =
+//                              {"Sat", "Sun", "Mon", "Tue", "Wed",
+//                               "Thu", "Fri", "Sat" };
+//          String foundValue = "";
+//          searchIndex = 0;
+//          foundIndex = observationtime.indexOf(',');
+//          foundValue = observationtime.substring(0, foundIndex);
 //          Serial.print(foundValue);
-          mYweekDay = 9;
-          for (int i = 0; i < 7; i++) {
-               if (foundValue == observeshortdays[i]) {
-                   mYweekDay = i;
-                   }
-               }
+//          mYweekDay = 9;
+//          for (int i = 0; i < 7; i++) {
+//               if (foundValue == observeshortdays[i]) {
+//                   mYweekDay = i;
+//                   }
+//               }
 //          Serial.print(" WD = "); Serial.println(mYweekDay);     
-          searchIndex = foundIndex + 2;
-          foundIndex = observationtime.indexOf(" ", searchIndex);
-          foundValue = observationtime.substring(searchIndex, foundIndex);
-          char tempday[foundValue.length() + 1];
-          foundValue.toCharArray(tempday, sizeof(tempday));
+//          searchIndex = foundIndex + 2;
+//          foundIndex = observationtime.indexOf(" ", searchIndex);
+//          foundValue = observationtime.substring(searchIndex, foundIndex);
+//          char tempday[foundValue.length() + 1];
+//          foundValue.toCharArray(tempday, sizeof(tempday));
   //        Serial.print(foundValue); 
-          mYmonthDay = atoi(tempday);
+//          mYmonthDay = atoi(tempday);
   //        Serial.print(" MD + "); Serial.println(mYmonthDay);
-          searchIndex = foundIndex + 1;
-          foundIndex = observationtime.indexOf(" ", searchIndex);
-          foundValue = observationtime.substring(searchIndex, foundIndex);
+//          searchIndex = foundIndex + 1;
+//          foundIndex = observationtime.indexOf(" ", searchIndex);
+//          foundValue = observationtime.substring(searchIndex, foundIndex);
   //        Serial.println(foundValue);
-          if (foundValue == String("Jan")) mYmonth = 1;
-          if (foundValue == String("Feb")) mYmonth = 2;
-          if (foundValue == String("Mar")) mYmonth = 3;
-          if (foundValue == String("Apr")) mYmonth = 4;
-          if (foundValue == String("May")) mYmonth = 5;
-          if (foundValue == String("Jun")) mYmonth = 6;
-          if (foundValue == String("Jul")) mYmonth = 7;
-          if (foundValue == String("Aug")) mYmonth = 8;
-          if (foundValue == String("Sep")) mYmonth = 9;
-          if (foundValue == String("Oct")) mYmonth = 10;
-          if (foundValue == String("Nov")) mYmonth = 11;
-          if (foundValue == String("Dec")) mYmonth = 12;
-          searchIndex = foundIndex + 1;
-          foundValue = observationtime.substring(searchIndex, searchIndex + 4);
-          char tempyear[foundValue.length() + 1];
-          foundValue.toCharArray(tempyear, sizeof(tempyear));
+//          if (foundValue == String("Jan")) mYmonth = 1;
+//          if (foundValue == String("Feb")) mYmonth = 2;
+//          if (foundValue == String("Mar")) mYmonth = 3;
+//          if (foundValue == String("Apr")) mYmonth = 4;
+//          if (foundValue == String("May")) mYmonth = 5;
+//          if (foundValue == String("Jun")) mYmonth = 6;
+//          if (foundValue == String("Jul")) mYmonth = 7;
+//          if (foundValue == String("Aug")) mYmonth = 8;
+//          if (foundValue == String("Sep")) mYmonth = 9;
+//          if (foundValue == String("Oct")) mYmonth = 10;
+//          if (foundValue == String("Nov")) mYmonth = 11;
+//          if (foundValue == String("Dec")) mYmonth = 12;
+//          searchIndex = foundIndex + 1;
+//          foundValue = observationtime.substring(searchIndex, searchIndex + 4);
+//          char tempyear[foundValue.length() + 1];
+//          foundValue.toCharArray(tempyear, sizeof(tempyear));
   //        Serial.print(foundValue);
-          mYyear = atoi(tempyear);
+//          mYyear = atoi(tempyear);
   //        Serial.print(" MY = "); Serial.println(mYyear);
-          searchIndex = searchIndex + 5;
-          foundValue = observationtime.substring(searchIndex, searchIndex + 2);
+//          searchIndex = searchIndex + 5;
+//          foundValue = observationtime.substring(searchIndex, searchIndex + 2);
   //        Serial.print(foundValue);
-          char temphour[foundValue.length() + 1];  
-          foundValue.toCharArray(temphour, sizeof(temphour));
-          mYhour = atoi(temphour);
+//          char temphour[foundValue.length() + 1];  
+//          foundValue.toCharArray(temphour, sizeof(temphour));
+//          mYhour = atoi(temphour);
   //        Serial.print( "hr = "); Serial.println(mYhour);
-          searchIndex = searchIndex + 3;
-          foundValue = observationtime.substring(searchIndex, searchIndex + 2);
+//          searchIndex = searchIndex + 3;
+//          foundValue = observationtime.substring(searchIndex, searchIndex + 2);
   //        Serial.print(foundValue);
-          char tempminute[foundValue.length() + 1];  
-          foundValue.toCharArray(tempminute, sizeof(tempminute));
-          mYminute = atoi(tempminute);
+//          char tempminute[foundValue.length() + 1];  
+//          foundValue.toCharArray(tempminute, sizeof(tempminute));
+//          mYminute = atoi(tempminute);
   //        Serial.print(" Min = "); Serial.println(mYminute);
-          searchIndex = searchIndex + 3;
-          foundValue = observationtime.substring(searchIndex, searchIndex + 2);
-          char tempsecond[foundValue.length() + 1];  
-          foundValue.toCharArray(tempsecond, sizeof(tempsecond));
+//          searchIndex = searchIndex + 3;
+//          foundValue = observationtime.substring(searchIndex, searchIndex + 2);
+//          char tempsecond[foundValue.length() + 1];  
+//          foundValue.toCharArray(tempsecond, sizeof(tempsecond));
   //        Serial.print(foundValue);
-          mYsecond = atoi(tempsecond);
+//          mYsecond = atoi(tempsecond);
    //        Serial.println(" Sec = "); Serial.println(mYsecond);
-          setTime(mYhour, mYminute, mYsecond, mYmonthDay, mYmonth, mYyear);
-                 
+  //        setTime(mYhour, mYminute, mYsecond, mYmonthDay, mYmonth, mYyear);
+            
  // Serial.println(F("-------------------------------------"));
   
   /* You need to make sure to clean up after yourself or the CC3000 can freak out */
