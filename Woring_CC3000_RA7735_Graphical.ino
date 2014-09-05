@@ -959,7 +959,7 @@ conditionsCtr = 0;
       tft.textEnlarge(1);
       tft.textColor(BLACK, WHITE);
         /* time of day */
-      tft.textSetCursor(450, 10);
+      tft.textSetCursor(430, 10);
       tft.print(internetCtr);
       tft.textSetCursor(550, 10);
       int tempHr;

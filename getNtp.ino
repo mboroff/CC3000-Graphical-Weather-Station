@@ -1,5 +1,6 @@
 void GetNtp() {
    Serial.println(F("UpdateNTPTime"));
+   internetCtr++;
   mysntp.UpdateNTPTime();
 
   Serial.println(F("Current local time is:"));

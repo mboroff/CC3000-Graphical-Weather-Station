@@ -10,8 +10,8 @@ void foreCast() {
  tft.textColor(BLACK, WHITE);
  tft.textSetCursor(35, 10);
  tft.print(observationtime);
- tft.textSetCursor(300, 10);
- tft.print("FORECAST");
+ tft.textSetCursor(310, 10);
+ tft.print("FORECAST ");
  tft.textColor(WHITE, BLUE);
  tft.textSetCursor(0, 90);
  tft.print(title1); 
