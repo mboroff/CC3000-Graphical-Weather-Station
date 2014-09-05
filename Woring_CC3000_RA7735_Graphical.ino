@@ -474,8 +474,9 @@ void loop(void)
          prevSec = 99;
         indoorCtr = 99;
         }   
-      if (hour() == 0 && minute() == 0 && second() < 3) {
+      if (hour() == 0 && minute() == 5 && second() < 3) {
           GetNtp();
+          delay(5000);
           firsTtime = true;
           }
       if (minute() ==  0 || minute() == 10 || minute() == 20 || 
