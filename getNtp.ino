@@ -1,4 +1,5 @@
 void GetNtp() {
+   Serial.println();
    Serial.println(F("UpdateNTPTime"));
    internetCtr++;
   mysntp.UpdateNTPTime();
