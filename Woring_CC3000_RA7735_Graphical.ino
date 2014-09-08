@@ -427,6 +427,12 @@ void setup(void)
   Serial.println("Connected to WiFi network!");
    
   Serial.println(F("Connected!"));
+      tft.textMode();
+      tft.textEnlarge(1);
+      tft.textColor(BLACK, WHITE);
+        /* time of day */
+      tft.textSetCursor(35, 10);
+      tft.print("Connected");
   
   // Wait for DHCP to complete 
   Serial.println(F("Request DHCP"));
@@ -457,6 +463,14 @@ void setup(void)
   cc3000.printIPdotsRev(ip);
 //  mprintIPdotsRev(ip);
    GetNtp();
+      tft.textMode();
+      tft.textEnlarge(1);
+      tft.textColor(BLACK, WHITE);
+        /* time of day */
+      tft.textSetCursor(35, 10);
+      tft.print("Getting Info");
+
+
 }
 
 void loop(void)
